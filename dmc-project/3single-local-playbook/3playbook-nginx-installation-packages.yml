@@ -1,0 +1,15 @@
+---
+  - name: "Playing with Ansible"
+    hosts: localhost
+    connection: local 
+    tasks:
+    - name: ensure nginx is at the latest version
+      apt: name=nginx state=latest
+    - name: start nginx
+      service:
+          name: nginx
+          state: started
+    - name: testing connectivity
+      shell: curl localhost
+      register: output
+    - debug: var=output.stdout_lines

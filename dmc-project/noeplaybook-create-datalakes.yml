@@ -1,0 +1,23 @@
+---
+  - name: "Create datalake directories"
+    hosts: localhost
+    tasks:
+      - name: Create bronze directory
+        become: true
+        file:
+          path: /tmp/workspace/datalake/bronze
+          state: directory
+      - name: Create silver directory
+        become: true
+        file:
+          path: /tmp/workspace/datalake/silver
+          state: directory
+      - name: Create gold directory
+        become: true
+        file:
+          path: /tmp/workspace/datalake/gold
+          state: directory
+      - name: Print success message
+        debug:
+          msg: "Datalake directories (bronze,silver, and golden) have been created successfully! :)"
+...

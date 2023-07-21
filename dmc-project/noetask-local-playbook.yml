@@ -1,0 +1,8 @@
+---
+  - name: "Master Playbook"
+    hosts: localhost
+    gather_facts: yes
+    tasks:
+      - include: ./noeplaybook-create-datalakes.yml
+      - include: ./noeplaybook-install-DB.yml
+...

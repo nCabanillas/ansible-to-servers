@@ -1,0 +1,47 @@
+---
+  - name: "Playing with Ansible - Updating 2 certificates from Spark Cluster"
+    hosts: localhost
+    connection: local 
+    vars:
+      certificates_path: /mnt/test/etc/spark/security
+      backup_path: "{{ certificates_path }}/backup"
+    tasks:
+    - name: Ansible fact - ansible_date_time
+      debug: var=ansible_date_time # VARIABLES GLOBALES
+
+    - name: CRETE DIRECTORY
+      file:
+        path: 
+        state: directory
+        owner: "{{ server_user }}"
+        recurse: yes
+
+    - name: REGISTER/GET
+      stat:
+        path: 
+      register: file1
+
+    - name: TRANSPORT
+      copy:   # COPY
+        remote_src: yes
+        src: 
+        dest: 
+        mode: '0770'
+      when: file1.stat.exists
+      register: file1Copied
+
+    - name: VALIDATION 
+      file:
+        path: "__SUCCESS_KEYSTORE-{{ ansible_date_time.date }}" # ARCHIVO FLAG
+        state: touch
+      when: file1.stat.checksum == file1Copied.checksum 
+
+    - name: REMOVE
+      file:  
+        path: 
+        state: absent
+
+    - name: "MOVE/COPY"
+      command: "cp /from /to"
+      when: new_file1.stat.exists == true
+      

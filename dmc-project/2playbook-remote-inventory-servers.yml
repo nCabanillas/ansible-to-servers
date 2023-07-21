@@ -1,0 +1,8 @@
+---
+  - name: "Playing with Ansible"
+    hosts: all # TOMA DE /ETC/ANSIBLE/HOSTS
+    tasks:
+    - name: "just execute a ls -ls command"
+      shell: ls -lh
+      register: output
+    - debug: var=output.stdout_lines

@@ -1,0 +1,85 @@
+---
+  - name: "Playing with Ansible - Updating 2 certificates from Spark Cluster"
+    hosts: localhost
+    connection: local 
+    vars:
+      certificates_path: /mnt/test/etc/spark/security
+      new_certificates: /mnt/test/etc/spark/security/new-certificates
+      backup_path: "{{ certificates_path }}/backup"
+      server_user: "root"
+      certificate1_name: "keystore.jks"
+      certificate2_name: "truststore.jks"
+    tasks:
+    - name: Ansible fact - ansible_date_time
+      debug: var=ansible_date_time # VARIABLES GLOBALES
+
+
+    - name: Create directory backup for kafka certificate path # BACKUP DIRECTORY
+      file:
+        path: "{{ backup_path }}"
+        state: directory
+        owner: "{{ server_user }}"
+        recurse: yes
+
+    - name: REGISTER/GET keystore certificate
+      stat:
+        path: "{{ certificates_path }}/{{ certificate1_name }}"
+      register: file1 # REGISTER JKS FILE FOR CONDITIONS
+    - name: REGISTER/GET truststore certificate
+      stat:
+        path: "{{ certificates_path }}/{{ certificate2_name }}"
+      register: file2 # REGISTER JKS FILE FOR CONDITIONS
+
+    - name: TRANSPORT kafka keystore Backup
+      copy:   # COPY
+        remote_src: yes
+        src: "{{ certificates_path }}/{{ certificate1_name }}"
+        dest: "{{ backup_path }}"
+        mode: '0770'
+      when: file1.stat.exists
+      register: file1Copied
+    - name: TRANSPORT kafka truststore Backup
+      copy:  # COPY
+        remote_src: yes
+        src: "{{ certificates_path }}/{{ certificate2_name }}"
+        dest: "{{ backup_path }}"
+        mode: '0770'
+      when: file2.stat.exists
+      register: file2Copied
+
+    - name: VALIDATION keystore
+      file:
+        path: "{{ backup_path }}/__SUCCESS_KEYSTORE-{{ ansible_date_time.date }}" # ARCHIVO FLAG
+        state: touch
+      when: file1.stat.checksum == file1Copied.checksum 
+    - name: VALIDATION truststore
+      file:
+        path: "{{ backup_path }}/__SUCCESS_TRUSTSTORE-{{ ansible_date_time.date }}" # ARCHIVO FLAG
+        state: touch
+      when: file2.stat.checksum == file2Copied.checksum
+
+    - name: REMOVE Previous version of keystore certificate path 
+      file:  # ELIMINAR DE LA RUTA ORIGINAL
+        path: "{{ certificates_path }}/{{ certificate1_name }}"
+        state: absent
+    - name: REMOVE Previous version of truststore certificate path 
+      file:  # ELIMINAR DE LA RUTA ORIGINAL
+        path: "{{ certificates_path }}/{{ certificate2_name }}"
+        state: absent
+
+    - name: REGISTER/GET new keystore certificate
+      stat:
+        path: "{{ new_certificates }}/{{ certificate1_name }}"
+      register: new_file1 # REGISTER NEW JKS FILE FOR CONDITIONS
+    - name: REGISTER/GET new truststore certificate
+      stat:
+        path: "{{ new_certificates }}/{{ certificate2_name }}"
+      register: new_file2 # REGISTER NEW JKS FILE FOR CONDITIONS
+
+    - name: "MOVE/COPY truststore to SPARK security"
+      command: "cp {{ new_certificates }}/{{ certificate1_name }} {{ certificates_path }}"
+      when: new_file1.stat.exists == true
+    - name: "MOVE/COPY keystore to SPARK security"
+      command: "cp {{ new_certificates }}/{{ certificate2_name }} {{ certificates_path }}"
+      when: new_file2.stat.exists == true
+      

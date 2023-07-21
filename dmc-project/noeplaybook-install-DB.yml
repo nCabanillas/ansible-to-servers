@@ -1,0 +1,20 @@
+---
+- name: "Install SQLite on Debian/Ubuntu"
+  hosts: localhost
+  become: true
+  connection: local
+  tasks:
+  - name: Update packages cache and upgrade if there are updates
+    apt:
+      update_cache: yes
+      upgrade: yes
+    when: ansible_os_family == "Debian"
+  - name: Install SQLite on Debian/Ubuntu
+    apt:
+      name: sqlite3
+      state: present
+    when: ansible_os_family == "Debian"
+  - name: Print success message
+    debug:
+      msg: "SQLite has been installed successfully!"
+...

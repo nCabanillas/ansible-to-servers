@@ -1,0 +1,5 @@
+---
+  - name: "Playing with Ansible - Updating 2 certificates from Spark Cluster"
+    hosts: localhost
+    connection: local
+    tasks:
